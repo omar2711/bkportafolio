@@ -21,7 +21,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Fire Detection API", version="1.0.0")
+app = FastAPI(title="Fire Detection API", version="1.0.1")
 
 allowed_hosts = os.getenv("ALLOWED_HOSTS", "*").split(",")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
@@ -345,7 +345,7 @@ async def root():
     """Endpoint de información"""
     return {
         "message": "Fire Detection API - Segura y Optimizada",
-        "version": "2.0.0",
+        "version": "2.0.1",
         "endpoints": {
             "/predict-image": "Detectar fuego y humo en imágenes",
             "/health": "Estado del servidor",
