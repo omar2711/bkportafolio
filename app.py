@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Fire Detection API", version="1.0.1")
 
 allowed_hosts = os.getenv("ALLOWED_HOSTS", "*").split(",")
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
+if allowed_hosts != ["*"]:
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
 
 cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
 app.add_middleware(CORSMiddleware, allow_origins=cors_origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
@@ -285,7 +286,7 @@ async def predict_image_endpoint(
     client_ip = get_client_ip(request) if request else "127.0.0.1"
     
     check_rate_limit(client_ip)
-    verify_api_key(x_api_key)
+    verify_api_key(x_api_key)  # Solo este endpoint requiere API key
     
     if not file.content_type or not file.content_type.startswith("image/"):
         failed_attempts[client_ip] += 1
@@ -364,12 +365,20 @@ async def root():
 
 @app.get("/health")
 async def health():
-    """Health check"""
-    return {
-        "status": "healthy",
-        "model_loaded": model is not None,
-        "device": str(device) if device else "not_initialized"
-    }
+    """Health check endpoint para Render - sin autenticación"""
+    try:
+        return {
+            "status": "healthy",
+            "model_loaded": model is not None,
+            "device": str(device) if device else "not_initialized",
+            "api_version": "1.0.1"
+        }
+    except Exception as e:
+        logger.error(f"Health check error: {e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
 
 @app.get("/security-stats")
 async def security_stats(x_api_key: Optional[str] = Header(None)):
