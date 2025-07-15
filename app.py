@@ -50,9 +50,9 @@ else:
     logger.info("✅ API_KEY cargada desde variables de entorno")
 
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
-    """Verificar API key (opcional para demostración)"""
+    """Verificar API key (OBLIGATORIA para seguridad)"""
     if not x_api_key:
-        return None
+        raise HTTPException(status_code=401, detail="API key requerida. Incluye X-API-Key en headers")
     if x_api_key != API_KEY:
         raise HTTPException(status_code=403, detail="API key inválida")
     return x_api_key
@@ -358,7 +358,7 @@ async def root():
             "size_limits": f"{MAX_FILE_SIZE // (1024*1024)}MB máximo, {MAX_IMAGE_WIDTH}x{MAX_IMAGE_HEIGHT} pixels",
             "security_headers": "X-Content-Type-Options, X-Frame-Options"
         },
-        "api_key_required": False,
+        "api_key_required": True,
         "note": "API protegida para uso profesional en portafolio"
     }
 
