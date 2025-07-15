@@ -248,30 +248,17 @@ def draw_classification(image: Image.Image) -> Image.Image:
     return image
 
 def validate_image_security(image_bytes: bytes, filename: str = "") -> bool:
-    """Validar seguridad de la imagen"""
-    image_signatures = {
-        b'\xFF\xD8\xFF': 'JPEG',
-        b'\x89PNG\r\n\x1a\n': 'PNG',
-        b'GIF87a': 'GIF',
-        b'GIF89a': 'GIF',
-        b'RIFF': 'WEBP'
-    }
-    
-    is_valid_image = False
-    for signature in image_signatures:
-        if image_bytes.startswith(signature):
-            is_valid_image = True
-            break
-    
-    if not is_valid_image:
+    """Validar que sea una imagen válida - simplificado"""
+    if len(image_bytes) < 100:
         return False
     
-    suspicious_patterns = [b'<script', b'javascript:', b'<?php', b'<%']
-    for pattern in suspicious_patterns:
-        if pattern in image_bytes.lower():
+    try:
+        image = Image.open(io.BytesIO(image_bytes))
+        if image.width < 1 or image.height < 1:
             return False
-    
-    return True
+        return True
+    except Exception:
+        return False
 
 @app.on_event("startup")
 async def startup():
@@ -286,11 +273,7 @@ async def predict_image_endpoint(
     client_ip = get_client_ip(request) if request else "127.0.0.1"
     
     check_rate_limit(client_ip)
-    verify_api_key(x_api_key)  # Solo este endpoint requiere API key
-    
-    if not file.content_type or not file.content_type.startswith("image/"):
-        failed_attempts[client_ip] += 1
-        raise HTTPException(status_code=400, detail="El archivo debe ser una imagen")
+    verify_api_key(x_api_key)
     
     try:
         image_bytes = await file.read()
@@ -303,8 +286,8 @@ async def predict_image_endpoint(
         
         if not validate_image_security(image_bytes, file.filename):
             failed_attempts[client_ip] += 1
-            logger.warning(f"🚨 Archivo sospechoso desde IP: {client_ip}")
-            raise HTTPException(status_code=400, detail="Archivo de imagen inválido o sospechoso")
+            logger.warning(f"🚨 Archivo no es una imagen válida desde IP: {client_ip}")
+            raise HTTPException(status_code=400, detail="El archivo debe ser una imagen válida")
         
         image = Image.open(io.BytesIO(image_bytes))
         
@@ -355,7 +338,7 @@ async def root():
         "security_features": {
             "rate_limiting": f"{MAX_REQUESTS_PER_MINUTE} requests por minuto",
             "ip_blocking": f"Bloqueo automático tras {MAX_FAILED_ATTEMPTS} intentos fallidos",
-            "file_validation": "Validación de magic numbers y contenido",
+            "file_validation": "Validación básica de imágenes con PIL",
             "size_limits": f"{MAX_FILE_SIZE // (1024*1024)}MB máximo, {MAX_IMAGE_WIDTH}x{MAX_IMAGE_HEIGHT} pixels",
             "security_headers": "X-Content-Type-Options, X-Frame-Options"
         },
