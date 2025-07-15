@@ -3,8 +3,22 @@ services:
     name: fire-detection-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: python start.py
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10
+        value: 3.12
+      - key: API_KEY
+        value: cae84f79b6dc4f34bb935fb2f3d1a8f76491eaf2a9b74d59bca4d389d4a1cb97
+      - key: MAX_REQUESTS_PER_MINUTE
+        value: 10
+      - key: MAX_FAILED_ATTEMPTS
+        value: 5
+      - key: BLOCK_DURATION
+        value: 300
+      - key: MAX_FILE_SIZE
+        value: 10485760
+      - key: MAX_IMAGE_WIDTH
+        value: 4000
+      - key: MAX_IMAGE_HEIGHT
+        value: 4000
     plan: free

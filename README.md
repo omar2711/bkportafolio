@@ -109,19 +109,33 @@ Estadísticas de seguridad (requiere API key)
 
 ## 🚀 Despliegue en Render
 
-### Variables de entorno en Render:
+### Archivos preparados para despliegue:
+- ✅ `render.yaml` - Configuración automática
+- ✅ `start.py` - Script de inicio optimizado
+- ✅ `runtime.txt` - Python 3.12.1
+- ✅ Variables de entorno configuradas
 
-```env
-API_KEY=cae84f79b6dc4f34bb935fb2f3d1a8f76491eaf2a9b74d59bca4d389d4a1cb97
-ALLOWED_HOSTS=tu-app.onrender.com,localhost
-CORS_ORIGINS=https://tu-frontend.com
-MAX_REQUESTS_PER_MINUTE=10
+### Pasos rápidos:
+1. **Push a GitHub**:
+   ```bash
+   git add .
+   git commit -m "Ready for Render deployment"
+   git push origin main
+   ```
+
+2. **Crear servicio en Render**:
+   - Ve a [render.com](https://render.com)
+   - "New Web Service" → Conecta este repositorio
+   - Render usará automáticamente `render.yaml`
+
+3. **¡Listo!** Tu API estará disponible en: `https://tu-app.onrender.com`
+
+### API Key configurada:
+```
+cae84f79b6dc4f34bb935fb2f3d1a8f76491eaf2a9b74d59bca4d389d4a1cb97
 ```
 
-### Comando de inicio:
-```bash
-python app.py
-```
+Ver `DEPLOY.md` para instrucciones detalladas.
 
 ## 📊 Monitoreo
 
